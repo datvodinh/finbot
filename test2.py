@@ -1,0 +1,21 @@
+import asyncio
+
+from src.core.agents import FinDAgent
+
+agent = FinDAgent()
+
+
+async def test_agent():
+    # Assuming `agent.chat` yields streaming responses
+    async for response in agent.chat(
+        user_message="Bạn có thể nhận xét về các mã cổ phiếu này được không ? https://vn.investing.com/equities/vingroup-jsc-historical-data; https://vn.investing.com/equities/fpt-corp-historical-data. Tôi nên đầu tư cổ phiếu nào ?",
+        stream=True,
+        max_tokens=4096,
+        temperature=0.8,
+    ):
+        async for chunk in response:
+            if chunk.choices:
+                print(chunk.choices[0].delta.content, end="")
+
+
+asyncio.run(test_agent())

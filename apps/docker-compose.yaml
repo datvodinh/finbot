@@ -1,0 +1,19 @@
+version: "3.9"
+
+services:
+  cache-db:
+    image: redis:alpine
+    container_name: cache-db
+    volumes:
+      - cache-db-data:/data
+    ports:
+      - "6479:6379"
+    networks:
+      - app-network
+
+volumes:
+  cache-db-data:
+
+networks:
+  app-network:
+    driver: bridge
