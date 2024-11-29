@@ -1,10 +1,12 @@
+from typing import List, Optional
+
 import gradio as gr
 import uvicorn
 from fastapi import FastAPI
 from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
-from src.gui.demo import FinbotGUI
-from typing import List, Optional
+
+from apps.agent.src.gui.demo import FinbotGUI
 
 app = FastAPI()
 
@@ -51,7 +53,7 @@ gr.mount_gradio_app(
 
 if __name__ == "__main__":
     uvicorn.run(
-        "src.__main__:app",
+        "main:app",
         host="0.0.0.0",
         port=8000,
         reload=True,

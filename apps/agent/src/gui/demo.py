@@ -1,7 +1,12 @@
 import os
 import time
-import gradio as gr
 from typing import Dict, List, Optional
+
+import gradio as gr
+
+from src.core.agents import FinDAgent
+
+agent = FinDAgent()
 
 
 class FinbotGUI:
@@ -45,7 +50,31 @@ class FinbotGUI:
         chatbot: List[Dict[str, str]],
         history: Optional[List[Dict[str, str]]] = None,
     ):
-        pass
+        query = message["text"]
+        chatbot.append(
+            {
+                "role": "user",
+                "content": query,
+            }
+        )
+
+        async for response in agent.chat(
+            user_message=message["text"],
+            stream=True,
+            max_tokens=4096,
+            temperature=0.8,
+        ):
+            all_reponse = ""
+            async for chunk in response:
+                all_reponse += chunk.choices[0].delta.content or ""
+                messages = [
+                    {
+                        "role": "assistant",
+                        "content": all_reponse,
+                    }
+                ]
+
+                yield chatbot + messages
 
     def build(self):
         with gr.Blocks(
@@ -83,6 +112,20 @@ class FinbotGUI:
                             placeholder="Nhập tin nhắn của bạn ở đây",
                             scale=10,
                         )
+
+            message.submit(
+                self._query,
+                inputs=[message, chatbot, history],
+                outputs=[chatbot],
+            ).then(
+                self._update_history,
+                inputs=[message, chatbot, history],
+                outputs=[message, history],
+            ).then(
+                lambda x: None,
+                inputs=[answer],
+                outputs=[answer],
+            )
 
             chatbot.clear(
                 self._hello_message,
