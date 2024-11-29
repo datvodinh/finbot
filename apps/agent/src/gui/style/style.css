@@ -1,0 +1,7 @@
+.centered-markdown h2 {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 0;
+    font-size: 3em;
+}

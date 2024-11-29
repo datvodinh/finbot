@@ -10,7 +10,15 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
+fastapi = "^0.115.5"
+gradio = "^5.7.1"
+pydantic = "^2.10.2"
+uvicorn = "^0.32.1"
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.8.0"
+deptry = "^0.21.1"
 
 [build-system]
 requires = ["poetry-core"]
