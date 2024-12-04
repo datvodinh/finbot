@@ -10,6 +10,7 @@ services:
       - "6479:6379"
     networks:
       - app-network
+    restart: unless-stopped
 
 volumes:
   cache-db-data:

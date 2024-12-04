@@ -61,8 +61,8 @@ class FinbotGUI:
         async for response in agent.chat(
             user_message=message["text"],
             stream=True,
-            max_tokens=4096,
-            temperature=0.8,
+            max_completion_tokens=16000,
+            temperature=1,
         ):
             all_reponse = ""
             async for chunk in response:
@@ -85,7 +85,7 @@ class FinbotGUI:
             ),
             css_paths=os.path.join(
                 os.getcwd(),
-                "src/gui/style/style.css",
+                "apps/agent/src/gui/style/style.css",
             ),
             # fill_width=True,
             # fill_height=True,

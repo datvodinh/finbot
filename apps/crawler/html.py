@@ -64,8 +64,10 @@ class HtmlCrawler(BaseCrawler):
         elif self.fetch_strategy == "hybrid":
             try:
                 data = await self.fetch_by_requests(url)
+                print("Fetched by requests")
             except httpx.HTTPStatusError:
                 data = await self.fetch_by_browser(url)
+                print("Fetched by browser")
         else:
             raise ValueError("Invalid fetch strategy: {}".format(self.fetch_strategy))
 

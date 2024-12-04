@@ -1,0 +1,6 @@
+openai
+gradio
+playwright
+httpx
+requests
+redis
