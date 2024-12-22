@@ -7,7 +7,7 @@ from .base import BaseTask
 
 
 class GenericTaskExecutor(BaseTask):
-    def __init__(self, model: OpenAIModelType = OpenAIModelType.GPT_4O):
+    def __init__(self, model: OpenAIModelType = OpenAIModelType.GPT_4O_MINI):
         super().__init__()
         self.model = OpenAIModel(
             model=model,

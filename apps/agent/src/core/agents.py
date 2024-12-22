@@ -1,3 +1,4 @@
+import time
 from typing import Any, Dict, List, Optional
 
 from src.core.tasks import GenericTaskExecutor, RAGTaskExecutor
@@ -17,13 +18,13 @@ class FinDAgent:
         )
 
         self._generic_task = GenericTaskExecutor(
-            model=OpenAIModelType.GPT_4O,
+            model=OpenAIModelType.GPT_4O_MINI,
         )
 
         self._fetch_urls_tool = FetchUrlsTool()
 
         self._rag_task = RAGTaskExecutor(
-            model=OpenAIModelType.GPT_4O,
+            model=OpenAIModelType.GPT_4O_MINI,
         )
 
     async def _check_task(
@@ -50,9 +51,10 @@ class FinDAgent:
             history=history,
         )
 
-        print("Task check result:", result)
-
-        context = ""
+        yield {
+            "action": "task_check",
+            "content": result["task"],
+        }
 
         if result["task"] == "generic":
             response = await self._generic_task.run(
@@ -61,9 +63,21 @@ class FinDAgent:
                 **kwargs,
             )
         elif result["task"] == "scrape_web_content":
+            yield {
+                "action": "fetch_urls",
+                "content": result["urls"],
+            }
+
+            start_time = time.time()
             context: str = await self._fetch_urls_tool.run(
                 urls=result["urls"],
             )
+            time_elapsed = time.time() - start_time
+
+            yield {
+                "action": "fetch_urls",
+                "content": f"🕒 Fetched these URLs in {time_elapsed:.2f} seconds.",
+            }
 
             response = await self._rag_task.run(
                 input_query=user_message,
@@ -74,4 +88,7 @@ class FinDAgent:
         else:
             raise NotImplementedError(f"Task {result['task']} is not implemented")
 
-        yield response
+        yield {
+            "action": "answer",
+            "content": response,
+        }

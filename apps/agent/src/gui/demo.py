@@ -61,20 +61,63 @@ class FinbotGUI:
         async for response in agent.chat(
             user_message=message["text"],
             stream=True,
-            max_tokens=4096,
-            temperature=0.8,
+            max_completion_tokens=16000,
+            temperature=1,
         ):
             all_reponse = ""
-            async for chunk in response:
-                all_reponse += chunk.choices[0].delta.content or ""
-                messages = [
+
+            if response["action"] == "task_check":
+                message = [
                     {
                         "role": "assistant",
-                        "content": all_reponse,
+                        "content": response["content"].upper(),
+                        "metadata": {
+                            "title": f"🤔 Checking task... - Result: {response['content'].upper()}"
+                        },
                     }
                 ]
 
-                yield chatbot + messages
+                chatbot.extend(message)
+
+                yield chatbot
+            elif response["action"] == "fetch_urls":
+                if (
+                    chatbot[-1]["metadata"]["title"]
+                    == "🔗 Found URLs, fetching contents ..."
+                ):
+                    message = [
+                        {
+                            "role": "assistant",
+                            "content": "",
+                            "metadata": {
+                                "title": response["content"],
+                            },
+                        }
+                    ]
+                else:
+                    message = [
+                        {
+                            "role": "assistant",
+                            "content": "\n ".join(response["content"]),
+                            "metadata": {
+                                "title": "🔗 Found URLs, fetching contents ...",
+                            },
+                        }
+                    ]
+                chatbot.extend(message)
+
+                yield chatbot
+            else:
+                async for chunk in response["content"]:
+                    all_reponse += chunk.choices[0].delta.content or ""
+                    messages = [
+                        {
+                            "role": "assistant",
+                            "content": all_reponse,
+                        }
+                    ]
+
+                    yield chatbot + messages
 
     def build(self):
         with gr.Blocks(
@@ -85,7 +128,7 @@ class FinbotGUI:
             ),
             css_paths=os.path.join(
                 os.getcwd(),
-                "src/gui/style/style.css",
+                "apps/agent/src/gui/style/style.css",
             ),
             # fill_width=True,
             # fill_height=True,
