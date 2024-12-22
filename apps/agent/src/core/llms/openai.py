@@ -15,7 +15,7 @@ load_dotenv(override=True)
 class OpenAIModel(BaseModel):
     def __init__(
         self,
-        model: OpenAIModelType = OpenAIModelType.GPT_4O,
+        model: OpenAIModelType = OpenAIModelType.GPT_4O_MINI,
         base_url: Optional[str] = None,
     ):
         r"""Initializes an instance of the OpenAIModel class."""

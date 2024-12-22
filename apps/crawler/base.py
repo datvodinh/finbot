@@ -33,7 +33,7 @@ class BaseCrawler(ABC):
             return "N/A"
 
         # If 3 newlines consecutively, replace with 2 newlines
-        return result.replace("\n\n\n", "\n\n")
+        return result.strip()
 
     @abstractmethod
     async def run(self) -> str:
