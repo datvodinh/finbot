@@ -1,3 +1,5 @@
+import json
+
 import httpx
 from playwright.async_api import TimeoutError, async_playwright
 
@@ -19,10 +21,13 @@ class HtmlCrawler(BaseCrawler):
         self.fetch_strategy = self.config.get("fetch_strategy", "hybrid")
 
     async def fetch_by_requests(self, url: str) -> str:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=5) as client:
             response = await client.get(url, headers=self.headers)
             response.raise_for_status()
-            return self.markdownify(response.text)
+            return {
+                "markdown": self.markdownify(response.text),
+                "urls": self.extract_all_urls(response.text),
+            }
 
     async def fetch_by_browser(self, url: str) -> str:
         async with async_playwright() as p:
@@ -47,7 +52,10 @@ class HtmlCrawler(BaseCrawler):
             content = await page.content()
 
             await browser.close()
-            return self.markdownify(content)
+            return {
+                "markdown": self.markdownify(content),
+                "urls": self.extract_all_urls(content),
+            }
 
     async def run(self, url: str) -> str:
         # Check cache first
@@ -55,7 +63,7 @@ class HtmlCrawler(BaseCrawler):
 
         if cached_data is not None:
             print("CACHE HIT: {}".format(url))
-            return cached_data.decode("utf-8")
+            return json.loads(cached_data.decode("utf-8"))
 
         if self.fetch_strategy == "requests":
             data = await self.fetch_by_requests(url)
@@ -72,6 +80,8 @@ class HtmlCrawler(BaseCrawler):
             raise ValueError("Invalid fetch strategy: {}".format(self.fetch_strategy))
 
         # Cache the data
-        self.cache_db.set(url, data, ex=self.cache_ttl)
+        self.cache_db.set(
+            url, json.dumps(data, indent=2, ensure_ascii=False), ex=self.cache_ttl
+        )
 
         return data

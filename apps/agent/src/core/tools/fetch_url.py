@@ -20,8 +20,6 @@ class FetchUrlsTool(BaseTool):
         output = ""
 
         for url, content in data.items():
-            output += (
-                f"## Below is the content of website with url: {url}\n{content}\n\n"
-            )
+            output += f"## Below is the content of website with url: {url}\n{content['markdown']}\n\n"
 
         return output

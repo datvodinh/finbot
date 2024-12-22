@@ -18,13 +18,13 @@ class FinDAgent:
         )
 
         self._generic_task = GenericTaskExecutor(
-            model=OpenAIModelType.GPT_4O,
+            model=OpenAIModelType.GPT_4O_MINI,
         )
 
         self._fetch_urls_tool = FetchUrlsTool()
 
         self._rag_task = RAGTaskExecutor(
-            model=OpenAIModelType.GPT_4O,
+            model=OpenAIModelType.GPT_4O_MINI,
         )
 
     async def _check_task(

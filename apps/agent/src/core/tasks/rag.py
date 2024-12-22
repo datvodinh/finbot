@@ -1,13 +1,17 @@
 from typing import Optional
 
+from dotenv import load_dotenv
+
 from ..llms import OpenAIModel
 from ..prompts import RAG
 from ..types import OpenAIModelType
 from .base import BaseTask
 
+load_dotenv(override=True)
+
 
 class RAGTaskExecutor(BaseTask):
-    def __init__(self, model: OpenAIModelType = OpenAIModelType.GPT_4O):
+    def __init__(self, model: OpenAIModelType = OpenAIModelType.GPT_4O_MINI):
         super().__init__()
         self.model = OpenAIModel(
             model=model,
