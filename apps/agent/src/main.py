@@ -56,8 +56,8 @@ if __name__ == "__main__":
         "main:app",
         host="0.0.0.0",
         port=8000,
-        reload=True,
-        reload_dirs=["src"],
-        reload_delay=0.5,
+        # reload=True,
+        # reload_dirs=["src"],
+        # reload_delay=0.5,
         use_colors=True,
     )
