@@ -1,11 +1,14 @@
 import os
 import re
-import redis
 from abc import ABC, abstractmethod
+
+import redis
+import tldextract
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 from qdrant_client import AsyncQdrantClient, models
+
 from ..shared import const
 
 load_dotenv(override=True)
@@ -22,7 +25,6 @@ class BaseCrawler(ABC):
             db=os.getenv("REDIS_DB"),
         )
         self.cache_db.ping()
-        self.cache_ttl = const.CACHE_TTL
 
         self.qdrant = AsyncQdrantClient(
             host=os.getenv("QDRANT_HOST"),
@@ -43,9 +45,22 @@ class BaseCrawler(ABC):
                 },
             )
 
-    def extract_all_urls(self, html: str) -> list:
+    def extract_all_urls(self, original_url: str, html: str) -> list:
         """
-        Extract all urls from html content
+        Extract all URLs from HTML content and sort them based on relevance.
+
+        This method parses the provided HTML content to find all anchor tags (<a>),
+        extracts their href attributes and text content, and returns a list of URLs.
+        The URLs are sorted such that those with the same domain as the original URL
+        and longer in length are considered more meaningful and are prioritized.
+
+        Args:
+            original_url (str): The original URL from which the HTML content was fetched.
+            html (str): The HTML content to parse for URLs.
+
+        Returns:
+            list: A list of dictionaries, each containing 'href' and 'text' keys representing
+                  the URL and its associated text content, respectively.
         """
         urls = []
 
@@ -59,6 +74,28 @@ class BaseCrawler(ABC):
                     "text": url.get_text(),
                 }
             )
+
+        # Urls with the same domain and longer in length should be more meaningful to recursively fetch
+        sorted_length_urls = sorted(
+            urls,
+            key=lambda x: (x["href"].startswith("http"), len(x["href"])),
+            reverse=True,
+        )
+
+        meaningful_urls = []
+
+        extracted = tldextract.extract(original_url)
+        root_domain_original_url = f"{extracted.domain}.{extracted.suffix}"
+
+        for url in sorted_length_urls:
+            # Check the same domain
+            if root_domain_original_url in url["href"]:
+                meaningful_urls.append(url)
+
+        # Add the rest
+        for url in sorted_length_urls:
+            if url not in meaningful_urls:
+                meaningful_urls.append(url)
 
         return urls
 
@@ -77,12 +114,8 @@ class BaseCrawler(ABC):
         result = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", result)
 
         # Remove multiple newlines/spaces
-        result = re.sub(
-            r"\n{3,}", "\n\n", result
-        )  # Replace 3+ newlines with 2
-        result = re.sub(
-            r" {2,}", " ", result
-        )  # Replace multiple spaces with single
+        result = re.sub(r"\n{3,}", "\n\n", result)  # Replace 3+ newlines with 2
+        result = re.sub(r" {2,}", " ", result)  # Replace multiple spaces with single
 
         # Remove empty lines at start/end
         result = result.strip()
