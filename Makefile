@@ -1,6 +1,6 @@
 install:
 	@echo "🚀 Install dependencies using Poetry"
-	@poetry install
+	@cd apps/agent poetry install  && cd ../..
 	@echo "🚀 Install Playwright"
 	@playwright install
 

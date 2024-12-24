@@ -1,2 +1,14 @@
-# finbot
-Chatbot Project of Business Analysis
+# Finance RAG Chatbot Project
+
+
+## Install
+
+```bash
+make install
+```
+
+## Run
+
+```bash
+make
+```
