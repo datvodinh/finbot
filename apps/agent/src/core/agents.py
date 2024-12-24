@@ -73,6 +73,11 @@ class FinBotAgent:
                 **kwargs,
             )
         else:
+            yield {
+                "action": "search",
+                "content": f"🔍 Searching for information about '{user_message}'...",
+            }
+
             if result["task"] == TaskType.SEARCH:
                 urls = await self._search_tool.run(
                     query=user_message,
@@ -88,11 +93,6 @@ class FinBotAgent:
                     "action": "fetch_urls",
                     "content": urls,
                 }
-
-            yield {
-                "action": "search",
-                "content": f"🔍 Searching for information about '{user_message}'...",
-            }
 
             start_time = time.perf_counter()
             data: List[Dict[str, str]] = await self._fetch_urls_tool.run(
@@ -119,8 +119,6 @@ class FinBotAgent:
                 query=user_message,
                 top_k=10,
             )
-
-            print(context)
 
             response = await self._rag_task.run(
                 input_query=user_message,

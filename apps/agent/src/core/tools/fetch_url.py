@@ -19,7 +19,6 @@ class FetchUrlsTool(BaseTool):
         points = []
 
         for url, content in data.items():
-            print(content.keys())
             points.append(
                 {
                     "url": url,
