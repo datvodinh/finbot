@@ -1,8 +1,7 @@
 import json
-
 import httpx
-from playwright.async_api import TimeoutError, async_playwright
 
+from playwright.async_api import TimeoutError, async_playwright
 from .base import BaseCrawler
 
 

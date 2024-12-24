@@ -1,3 +1,6 @@
-from .enum_type import OpenAIModelType
+from .enum_type import OpenAIModelType, OpenAIEmbeddingModelType
 
-__all__ = ["OpenAIModelType"]
+__all__ = [
+    "OpenAIModelType",
+    "OpenAIEmbeddingModelType",
+]

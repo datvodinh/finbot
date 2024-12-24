@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from markdownify import markdownify as md
-
+from qdrant_client import AsyncQdrantClient, models
 from ..shared import const
 
 load_dotenv(override=True)
@@ -23,6 +23,25 @@ class BaseCrawler(ABC):
         )
         self.cache_db.ping()
         self.cache_ttl = const.CACHE_TTL
+
+        self.qdrant = AsyncQdrantClient(
+            host=os.getenv("QDRANT_HOST"),
+            port=os.getenv("QDRANT_PORT"),
+        )
+
+    async def create_collection(self):
+        if not await self.qdrant.collection_exists(
+            os.getenv("QDRANT_COLLECTION", "finbot")
+        ):
+            await self.qdrant.create_collection(
+                collection_name=os.getenv("QDRANT_COLLECTION", "finbot"),
+                vectors_config={
+                    "text": models.VectorParams(
+                        size=1024,
+                        distance=models.Distance.COSINE,
+                    ),
+                },
+            )
 
     def extract_all_urls(self, html: str) -> list:
         """
