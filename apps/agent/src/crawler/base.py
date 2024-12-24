@@ -59,8 +59,12 @@ class BaseCrawler(ABC):
         result = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", result)
 
         # Remove multiple newlines/spaces
-        result = re.sub(r"\n{3,}", "\n\n", result)  # Replace 3+ newlines with 2
-        result = re.sub(r" {2,}", " ", result)  # Replace multiple spaces with single
+        result = re.sub(
+            r"\n{3,}", "\n\n", result
+        )  # Replace 3+ newlines with 2
+        result = re.sub(
+            r" {2,}", " ", result
+        )  # Replace multiple spaces with single
 
         # Remove empty lines at start/end
         result = result.strip()

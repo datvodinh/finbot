@@ -126,10 +126,10 @@ class FinbotGUI:
                 radius_size=gr.themes.sizes.radius_xxl,
                 text_size=gr.themes.sizes.text_md,
             ),
-            css_paths=os.path.join(
-                os.getcwd(),
-                "apps/agent/src/gui/style/style.css",
-            ),
+            # css_paths=os.path.join(
+            #     os.getcwd(),
+            #     "src/gui/style/style.css",
+            # ),
             # fill_width=True,
             # fill_height=True,
         ) as demo:

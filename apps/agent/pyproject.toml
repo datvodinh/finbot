@@ -5,7 +5,9 @@ description = ""
 authors = ["Dat Vo <vodinhdat03@gmail.com>"]
 readme = "README.md"
 packages = [
-  {include = "src"}
+  {include = "src"},
+  {include = "crwaker"},
+  {include = "shared"},
 ]
 
 [tool.poetry.dependencies]
@@ -19,6 +21,8 @@ httpx = "^0.28.0"
 markdownify = "^0.14.1"
 redis = "^5.2.0"
 hiredis = "^3.0.0"
+python-dotenv = "^1.0.1"
+openai = "^1.58.1"
 
 
 [tool.poetry.group.dev.dependencies]

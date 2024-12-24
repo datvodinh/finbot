@@ -1,7 +1,7 @@
 import asyncio
 from typing import List
 
-from apps.crawler import HtmlCrawler
+from src.crawler import HtmlCrawler
 
 from .base import BaseTool
 
