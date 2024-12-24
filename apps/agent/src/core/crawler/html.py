@@ -6,12 +6,12 @@ from .base import BaseCrawler
 
 
 class HtmlCrawler(BaseCrawler):
-    def __init__(self, config: dict = {}):
+    def __init__(self, config: dict):
         super().__init__(config)
 
         self.headers = self.config.get("headers", self.base_headers)
         self.headless = self.config.get("headless", True)
-        self.timeout = self.config.get("timeout", 60000)
+        self.timeout = self.config.get("timeout", 5_000)
 
         # Before the browser closes, take a screenshot or not
         self.end_with_capture = self.config.get("end_with_capture", False)
@@ -20,12 +20,21 @@ class HtmlCrawler(BaseCrawler):
         self.fetch_strategy = self.config.get("fetch_strategy", "hybrid")
 
     async def fetch_by_requests(self, url: str) -> str:
-        async with httpx.AsyncClient(timeout=5) as client:
-            response = await client.get(url, headers=self.headers)
-            response.raise_for_status()
+        try:
+            async with httpx.AsyncClient(
+                timeout=5,
+                max_redirects=0,
+            ) as client:
+                response = await client.get(url, headers=self.headers)
+                response.raise_for_status()
+                return {
+                    "markdown": self.markdownify(response.text),
+                    "urls": self.extract_all_urls(response.text),
+                }
+        except Exception as _:
             return {
-                "markdown": self.markdownify(response.text),
-                "urls": self.extract_all_urls(response.text),
+                "markdown": "",
+                "urls": [],
             }
 
     async def fetch_by_browser(self, url: str) -> str:
@@ -34,27 +43,28 @@ class HtmlCrawler(BaseCrawler):
                 headless=self.headless,
                 timeout=self.timeout,
             )
-            page = await browser.new_page()
-
-            # Set header for page
-            await page.set_extra_http_headers(self.headers)
 
             try:
+                page = await browser.new_page()
+
+                # Set header for page
+                await page.set_extra_http_headers(self.headers)
                 await page.goto(url)
+                content = await page.content()
+                return {
+                    "markdown": self.markdownify(content),
+                    "urls": self.extract_all_urls(content),
+                }
             except TimeoutError:
                 print("Timeout reached, collecting available data")
+                return {
+                    "markdown": "",
+                    "urls": [],
+                }
             finally:
                 if self.end_with_capture:
                     await page.screenshot(path="screenshot.png")
-
-            # Get content of the page, then convert to markdown
-            content = await page.content()
-
-            await browser.close()
-            return {
-                "markdown": self.markdownify(content),
-                "urls": self.extract_all_urls(content),
-            }
+                await browser.close()
 
     async def run(self, url: str) -> str:
         # Check cache first

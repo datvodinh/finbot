@@ -16,17 +16,24 @@ class TaskCheckTool(BaseTool):
         super().__init__()
         self.model = OpenAIModel(model=model)
 
+    def _clean_history(self, history: Optional[List] = None) -> Optional[List]:
+        if history is None:
+            return None
+
+        return [item for item in history if item["role"] == "user"]
+
     async def run(
         self,
         input_query: str,
         history: Optional[List] = None,
     ) -> dict:
         response = await self.model.query(
-            input_query,
-            history,
+            user_message=input_query,
+            history=self._clean_history(history),
             system_message=TASK_CHECK,
+            temperature=0,
         )
 
         return self.text_to_json(
-            text=response.choices[0].message.content,
+            text=response.choices[0].message.content or "{'task': 'generic'}",
         )

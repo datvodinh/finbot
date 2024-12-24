@@ -11,6 +11,7 @@ class FetchUrlsTool(BaseTool):
         self.crawler = HtmlCrawler(config=config)
 
     async def run(self, urls: List[str]) -> List[Dict[str, str]]:
+        urls = [url for url in urls if ".pdf" not in url]
         tasks = [self.crawler.run(url) for url in urls]
 
         # A dictionary of urls and their respective markdown content

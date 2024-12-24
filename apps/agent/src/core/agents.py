@@ -81,7 +81,7 @@ class FinBotAgent:
             if result["task"] == TaskType.SEARCH:
                 urls = await self._search_tool.run(
                     query=user_message,
-                    num_results=3,
+                    num_results=6,
                 )
                 yield {
                     "action": "search_urls",

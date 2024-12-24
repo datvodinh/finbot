@@ -44,7 +44,9 @@ class OpenAIModel(BaseModel):
             if len(messages) > 0 and messages[0]["role"] == "system":
                 messages[0]["content"] = system_message
             else:
-                messages.insert(0, {"role": "system", "content": system_message})
+                messages.insert(
+                    0, {"role": "system", "content": system_message}
+                )
 
         messages.append({"role": "user", "content": user_message})
 

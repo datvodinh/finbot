@@ -7,6 +7,7 @@ class BaseTool(ABC):
         pass
 
     def text_to_json(self, text: str) -> dict:
+        """Convert text to json"""
         try:
             return json.loads(text)
         except json.JSONDecodeError:
