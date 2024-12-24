@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Literal
 
 import gradio as gr
 
@@ -49,6 +49,7 @@ class FinbotGUI:
         message: str,
         chatbot: List[Dict[str, str]],
         history: Optional[List[Dict[str, str]]] = None,
+        mode: Literal["dev", "prod"] = "dev",
     ):
         query = message["text"]
         chatbot.append(
@@ -67,7 +68,7 @@ class FinbotGUI:
         ):
             all_reponse = ""
 
-            if response["action"] == "task_check":
+            if response["action"] == "task_check" and mode == "dev":
                 message = [
                     {
                         "role": "assistant",
@@ -77,11 +78,10 @@ class FinbotGUI:
                         },
                     }
                 ]
-
                 chatbot.extend(message)
-
                 yield chatbot
-            elif response["action"] == "search_urls":
+
+            elif response["action"] == "search_urls" and mode == "dev":
                 message = [
                     {
                         "role": "assistant",
@@ -92,10 +92,9 @@ class FinbotGUI:
                     }
                 ]
                 chatbot.extend(message)
-
                 yield chatbot
 
-            elif response["action"] == "fetch_urls":
+            elif response["action"] == "fetch_urls" and mode == "dev":
                 message = [
                     {
                         "role": "assistant",
@@ -106,9 +105,12 @@ class FinbotGUI:
                     }
                 ]
                 chatbot.extend(message)
-
                 yield chatbot
-            elif response["action"] in ["crawl_urls", "search"]:
+
+            elif (
+                response["action"] in ["crawl_urls", "search"]
+                and mode == "dev"
+            ):
                 message = [
                     {
                         "role": "assistant",
@@ -119,9 +121,9 @@ class FinbotGUI:
                     }
                 ]
                 chatbot.extend(message)
-
                 yield chatbot
-            elif response["action"] == "vector_store":
+
+            elif response["action"] == "vector_store" and mode == "dev":
                 message = [
                     {
                         "role": "assistant",
@@ -132,8 +134,8 @@ class FinbotGUI:
                     }
                 ]
                 chatbot.extend(message)
-
                 yield chatbot
+
             elif response["action"] == "answer":
                 async for chunk in response["content"]:
                     all_reponse += chunk.choices[0].delta.content or ""
@@ -143,10 +145,7 @@ class FinbotGUI:
                             "content": all_reponse,
                         }
                     ]
-
                     yield chatbot + messages
-            else:
-                raise ValueError(f"Unknown action: {response['action']}")
 
     def build(self):
         with gr.Blocks(
@@ -172,6 +171,11 @@ class FinbotGUI:
                     history = gr.State([])
                     answer = gr.State("")
                     with gr.Row():
+                        mode = gr.Dropdown(
+                            value="prod",
+                            choices=["prod", "dev"],
+                            show_label=False,
+                        )
                         message = gr.MultimodalTextbox(
                             show_label=False,
                             file_types=["text"],
@@ -181,7 +185,7 @@ class FinbotGUI:
 
             message.submit(
                 self._query,
-                inputs=[message, chatbot, history],
+                inputs=[message, chatbot, history, mode],
                 outputs=[chatbot],
             ).then(
                 self._update_history,
