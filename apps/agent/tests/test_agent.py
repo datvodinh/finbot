@@ -1,8 +1,8 @@
 import asyncio
 
-from src.core.agents import FinDAgent
+from src.core.agents import FinBotAgent
 
-agent = FinDAgent()
+agent = FinBotAgent()
 
 
 async def test_agent():

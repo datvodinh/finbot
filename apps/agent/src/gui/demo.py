@@ -4,9 +4,9 @@ from typing import Dict, List, Optional
 
 import gradio as gr
 
-from src.core.agents import FinDAgent
+from src.core.agents import FinBotAgent
 
-agent = FinDAgent()
+agent = FinBotAgent()
 
 
 class FinbotGUI:
@@ -61,8 +61,9 @@ class FinbotGUI:
         async for response in agent.chat(
             user_message=message["text"],
             stream=True,
-            max_completion_tokens=16000,
-            temperature=1,
+            history=history[-2:],
+            max_completion_tokens=4000,
+            temperature=0.5,
         ):
             all_reponse = ""
 

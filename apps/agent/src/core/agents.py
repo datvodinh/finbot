@@ -6,11 +6,11 @@ from src.core.tools import FetchUrlsTool, TaskCheckTool
 from src.core.types import OpenAIModelType
 
 
-class FinDAgent:
+class FinBotAgent:
     def __init__(
         self,
     ) -> None:
-        """Initialize the FinDAgent."""
+        """Initialize the FinBotAgent."""
         super().__init__()
 
         self._task_check_tool = TaskCheckTool(
@@ -86,7 +86,9 @@ class FinDAgent:
                 **kwargs,
             )
         else:
-            raise NotImplementedError(f"Task {result['task']} is not implemented")
+            raise NotImplementedError(
+                f"Task {result['task']} is not implemented"
+            )
 
         yield {
             "action": "answer",
