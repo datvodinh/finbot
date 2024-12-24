@@ -56,6 +56,9 @@ class FinBotAgent:
             "content": result["task"],
         }
 
+        if result["task"] not in ["generic", "scrape_web_content"]:
+            result["task"] = "generic"
+
         if result["task"] == "generic":
             response = await self._generic_task.run(
                 input_query=user_message,
@@ -68,11 +71,11 @@ class FinBotAgent:
                 "content": result["urls"],
             }
 
-            start_time = time.time()
+            start_time = time.perf_counter()
             context: str = await self._fetch_urls_tool.run(
                 urls=result["urls"],
             )
-            time_elapsed = time.time() - start_time
+            time_elapsed = time.perf_counter() - start_time
 
             yield {
                 "action": "fetch_urls",

@@ -61,7 +61,7 @@ class FinbotGUI:
         async for response in agent.chat(
             user_message=message["text"],
             stream=True,
-            history=history[-2:],
+            history=history[-5:],
             max_completion_tokens=4000,
             temperature=0.5,
         ):
@@ -122,17 +122,11 @@ class FinbotGUI:
 
     def build(self):
         with gr.Blocks(
-            theme=gr.themes.Ocean(
-                spacing_size=gr.themes.sizes.spacing_sm,
-                radius_size=gr.themes.sizes.radius_xxl,
-                text_size=gr.themes.sizes.text_md,
-            ),
+            theme=gr.themes.Ocean(),
             css_paths=os.path.join(
                 os.getcwd(),
                 "apps/agent/src/gui/style/style.css",
             ),
-            # fill_width=True,
-            # fill_height=True,
         ) as demo:
             gr.Markdown(
                 "## Finbot",

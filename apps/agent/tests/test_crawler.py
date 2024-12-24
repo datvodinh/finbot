@@ -1,6 +1,6 @@
 import asyncio
 
-from apps.crawler import HtmlCrawler
+from src.core.crawler import HtmlCrawler
 
 crawler = HtmlCrawler(
     config={

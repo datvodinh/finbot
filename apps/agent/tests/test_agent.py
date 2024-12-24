@@ -13,9 +13,7 @@ async def test_agent():
         max_tokens=4096,
         temperature=0.8,
     ):
-        async for chunk in response:
-            if chunk.choices:
-                print(chunk.choices[0].delta.content, end="")
+        print(response)
 
 
 asyncio.run(test_agent())

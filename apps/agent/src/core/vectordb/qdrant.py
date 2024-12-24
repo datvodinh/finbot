@@ -115,8 +115,6 @@ class QdrantVectorStore(BaseVectorStore):
             await self.create_collection(collection_name)
         embeddings, texts = await self._get_embedding(points, embedding_keys)
 
-        print(f"Total embeddings: {len(embeddings)}")
-
         point_list = models.PointsList(
             points=[
                 models.PointStruct(
@@ -128,10 +126,6 @@ class QdrantVectorStore(BaseVectorStore):
                 )
                 for point, embedding, text in zip(points, embeddings, texts)
             ]
-        )
-
-        print(
-            f"Inserting {len(point_list.points)} points into collection {collection_name}"
         )
 
         await client.upsert(

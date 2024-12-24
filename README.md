@@ -1,5 +1,6 @@
 # Finance RAG Chatbot Project
 
+![alt text](images/flow.png)
 
 ## Install
 
