@@ -22,3 +22,16 @@ class OpenAIEmbeddingModelType(Enum):
             return 1536
         elif self is OpenAIEmbeddingModelType.TEXT_EMBEDDING_3_LARGE:
             return 3072
+
+
+class TaskType:
+    GENERIC = "generic"
+    SCRAPE = "scrape"
+    SEARCH = "search"
+
+    @staticmethod
+    def is_generic_task(task: str) -> str:
+        """Check if the given task is a generic task."""
+        if task in [TaskType.SCRAPE, TaskType.SEARCH]:
+            return False
+        return True

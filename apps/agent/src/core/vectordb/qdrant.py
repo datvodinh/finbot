@@ -12,7 +12,6 @@ class QdrantVectorStore(BaseVectorStore):
     def __init__(
         self,
         location: str = "http://localhost:6333",
-        collection_name: str = "finbot",
         model_type: OpenAIEmbeddingModelType = OpenAIEmbeddingModelType.TEXT_EMBEDDING_3_LARGE,
     ) -> None:
         super().__init__()
@@ -20,7 +19,7 @@ class QdrantVectorStore(BaseVectorStore):
         self.model_type = model_type
         self.model = OpenAIEmbedding(model=self.model_type)
         self.encoding = tiktoken.encoding_for_model("gpt-4o-mini")
-        self.collection_name = collection_name
+        self.collection_name = "finbot"
 
     async def get_client(self) -> AsyncQdrantClient:
         """Asynchronously retrieves an AsyncQdrantClient connected to the specified location."""
@@ -102,12 +101,14 @@ class QdrantVectorStore(BaseVectorStore):
 
                 for idx in range(0, len(encode), 2048):
                     new_point = {
-                        "text": encode[idx : idx + 2048],
+                        "text": self.encoding.decode(encode[idx : idx + 2048]),
                         **metadata,
                     }
                     chunk_points.append(new_point)
             else:
                 chunk_points.append(point)
+
+        return chunk_points
 
     async def _delete_points_with_urls(
         self,
@@ -116,7 +117,7 @@ class QdrantVectorStore(BaseVectorStore):
         """Delete points with the URL(s), if the URL(s) expired in Redis."""
         client = await self.get_client()
         await client.delete(
-            collection_name="{collection_name}",
+            collection_name=self.collection_name,
             points_selector=models.FilterSelector(
                 filter=models.Filter(
                     must=[
@@ -131,7 +132,6 @@ class QdrantVectorStore(BaseVectorStore):
 
     async def batch_insert(
         self,
-        collection_name: str,
         points: List[Dict[str, Any]],
         embedding_keys: Optional[List[str]] = ["text"],
         **kwargs,
@@ -150,17 +150,15 @@ class QdrantVectorStore(BaseVectorStore):
             assert all(
                 [key in point for key in embedding_keys for point in points]
             ), f"Redundant keys in the embedding_keys: {embedding_keys}"
-        
-        # Chunk the points if the encoded text is too long
-        points = self._chunk(points)
-        
+
         # Remove points with expired URLs
         urls = list(map(lambda point: point["url"], points))
         await self._delete_points_with_urls(urls)
 
+        # Chunk the points if the encoded text is too long
+        points = self._chunk(points)
+
         client = await self.get_client()
-        if not await client.collection_exists(collection_name):
-            await self.create_collection(collection_name)
         embeddings, texts = await self._get_embedding(points, embedding_keys)
 
         point_list = models.PointsList(
@@ -177,29 +175,63 @@ class QdrantVectorStore(BaseVectorStore):
         )
 
         await client.upsert(
-            collection_name=collection_name,
+            collection_name=self.collection_name,
             points=point_list,
             **kwargs,
         )
 
+    def _post_process_points(
+        self,
+        points: List[models.ScoredPoint],
+    ) -> str:
+        """Post-processes the points of the query and returns the context."""
+        embedding_keys = list(points[0].payload.keys())
+        texts = []
+
+        def get_header():
+            return "---START---\n"
+
+        def get_footer():
+            return "---END---\n"
+
+        def get_text(
+            point: Dict[str, Any],
+            embedding_keys: Optional[List[str]],
+        ):
+            """Extracts the text from the given point."""
+            text = ""
+            if embedding_keys is None:
+                return point["text"]
+
+            for key in embedding_keys:
+                header = key if key != "text" else "content"
+                if key in point:
+                    text += f"{header.upper()}: {point[key]}\n"
+            return text
+
+        for i in range(len(points)):
+            text = ""
+            text += get_header()
+            text += f"SCORE: {points[i].score}\n"
+            text += get_text(points[i].payload, embedding_keys=embedding_keys)
+            text += get_footer()
+            texts.append(text)
+
+        return "\n".join(texts)
+
     async def query(
         self,
-        collection_name: str,
         query: str,
         top_k: int = 6,
         filters: Optional[models.Filter] = None,
         **kwargs,
     ) -> List[models.ScoredPoint]:
         """Asynchronously queries the specified collection for similar embeddings to the given query."""
-        collection_name = collection_name.lower()
         client = await self.get_client()
-        if not await client.collection_exists(collection_name):
-            raise ValueError(f"Collection {collection_name} does not exist.")
-
         embedding = await self.model.embed(query)
 
         response = await client.search(
-            collection_name=collection_name,
+            collection_name=self.collection_name,
             query_vector=models.NamedVector(
                 name="text",
                 vector=embedding,
@@ -209,4 +241,4 @@ class QdrantVectorStore(BaseVectorStore):
             **kwargs,
         )
 
-        return response
+        return self._post_process_points(response)

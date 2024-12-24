@@ -73,7 +73,7 @@ class FinbotGUI:
                         "role": "assistant",
                         "content": response["content"].upper(),
                         "metadata": {
-                            "title": f"🤔 Checking task... - Result: {response['content'].upper()}"
+                            "title": f"🤔 Task: {response['content'].upper()}"
                         },
                     }
                 ]
@@ -81,34 +81,60 @@ class FinbotGUI:
                 chatbot.extend(message)
 
                 yield chatbot
-            elif response["action"] == "fetch_urls":
-                if (
-                    chatbot[-1]["metadata"]["title"]
-                    == "🔗 Found URLs, fetching contents ..."
-                ):
-                    message = [
-                        {
-                            "role": "assistant",
-                            "content": "",
-                            "metadata": {
-                                "title": response["content"],
-                            },
-                        }
-                    ]
-                else:
-                    message = [
-                        {
-                            "role": "assistant",
-                            "content": "\n ".join(response["content"]),
-                            "metadata": {
-                                "title": "🔗 Found URLs, fetching contents ...",
-                            },
-                        }
-                    ]
+            elif response["action"] == "search_urls":
+                message = [
+                    {
+                        "role": "assistant",
+                        "content": "\n ".join(response["content"]),
+                        "metadata": {
+                            "title": "🔍 Search URLs.",
+                        },
+                    }
+                ]
                 chatbot.extend(message)
 
                 yield chatbot
-            else:
+
+            elif response["action"] == "fetch_urls":
+                message = [
+                    {
+                        "role": "assistant",
+                        "content": "\n ".join(response["content"]),
+                        "metadata": {
+                            "title": "🔗 Found URLs, fetching contents ...",
+                        },
+                    }
+                ]
+                chatbot.extend(message)
+
+                yield chatbot
+            elif response["action"] in ["crawl_urls", "search"]:
+                message = [
+                    {
+                        "role": "assistant",
+                        "content": "",
+                        "metadata": {
+                            "title": response["content"],
+                        },
+                    }
+                ]
+                chatbot.extend(message)
+
+                yield chatbot
+            elif response["action"] == "vector_store":
+                message = [
+                    {
+                        "role": "assistant",
+                        "content": response["content"],
+                        "metadata": {
+                            "title": "📦 Stored in QDrant!",
+                        },
+                    }
+                ]
+                chatbot.extend(message)
+
+                yield chatbot
+            elif response["action"] == "answer":
                 async for chunk in response["content"]:
                     all_reponse += chunk.choices[0].delta.content or ""
                     messages = [
@@ -119,6 +145,8 @@ class FinbotGUI:
                     ]
 
                     yield chatbot + messages
+            else:
+                raise ValueError(f"Unknown action: {response['action']}")
 
     def build(self):
         with gr.Blocks(

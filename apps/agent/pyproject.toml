@@ -23,6 +23,7 @@ openai = "^1.58.1"
 bs4 = "^0.0.2"
 qdrant-client = "^1.12.1"
 tiktoken = "^0.8.0"
+google-api-python-client = "^2.156.0"
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["hiredis"]

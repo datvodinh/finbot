@@ -1,9 +1,11 @@
+import os
+import asyncio
 import time
 from typing import Any, Dict, List, Optional
-
 from src.core.tasks import GenericTaskExecutor, RAGTaskExecutor
-from src.core.tools import FetchUrlsTool, TaskCheckTool
-from src.core.types import OpenAIModelType
+from src.core.tools import FetchUrlsTool, TaskCheckTool, SearchTool
+from src.core.types import OpenAIModelType, TaskType
+from src.core.vectordb import QdrantVectorStore
 
 
 class FinBotAgent:
@@ -23,9 +25,17 @@ class FinBotAgent:
 
         self._fetch_urls_tool = FetchUrlsTool()
 
+        self._search_tool = SearchTool()
+
         self._rag_task = RAGTaskExecutor(
             model=OpenAIModelType.GPT_4O_MINI,
         )
+
+        self._vector_store = QdrantVectorStore(
+            location=os.getenv("QDRANT_URL", "http://localhost:6333"),
+        )
+
+        asyncio.run(self._vector_store.create_collection())
 
     async def _check_task(
         self,
@@ -56,41 +66,67 @@ class FinBotAgent:
             "content": result["task"],
         }
 
-        if result["task"] not in ["generic", "scrape_web_content"]:
-            result["task"] = "generic"
-
-        if result["task"] == "generic":
+        if TaskType.is_generic_task(result["task"]):
             response = await self._generic_task.run(
                 input_query=user_message,
                 history=history,
                 **kwargs,
             )
-        elif result["task"] == "scrape_web_content":
+        else:
+            if result["task"] == TaskType.SEARCH:
+                urls = await self._search_tool.run(
+                    query=user_message,
+                    num_results=3,
+                )
+                yield {
+                    "action": "search_urls",
+                    "content": urls,
+                }
+            else:
+                urls = result["urls"]
+                yield {
+                    "action": "fetch_urls",
+                    "content": urls,
+                }
+
             yield {
-                "action": "fetch_urls",
-                "content": result["urls"],
+                "action": "search",
+                "content": f"🔍 Searching for information about '{user_message}'...",
             }
 
             start_time = time.perf_counter()
-            context: str = await self._fetch_urls_tool.run(
-                urls=result["urls"],
+            data: List[Dict[str, str]] = await self._fetch_urls_tool.run(
+                urls=urls,
             )
             time_elapsed = time.perf_counter() - start_time
 
             yield {
-                "action": "fetch_urls",
+                "action": "crawl_urls",
                 "content": f"🕒 Fetched these URLs in {time_elapsed:.2f} seconds.",
             }
+
+            await self._vector_store.batch_insert(
+                points=data,
+                embedding_keys=list(data[0].keys()),
+            )
+
+            yield {
+                "action": "vector_store",
+                "content": "📦 Stored the fetched URLs in the vector store.",
+            }
+
+            context = await self._vector_store.query(
+                query=user_message,
+                top_k=10,
+            )
+
+            print(context)
 
             response = await self._rag_task.run(
                 input_query=user_message,
                 context=context,
                 history=history,
                 **kwargs,
-            )
-        else:
-            raise NotImplementedError(
-                f"Task {result['task']} is not implemented"
             )
 
         yield {

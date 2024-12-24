@@ -13,7 +13,12 @@ class GenericTaskExecutor(BaseTask):
             model=model,
         )
 
-    async def run(self, input_query: str, history: Optional[list], **kwargs):
+    async def run(
+        self,
+        input_query: str,
+        history: Optional[list],
+        **kwargs,
+    ):
         return await self.model.query(
             input_query,
             history,
