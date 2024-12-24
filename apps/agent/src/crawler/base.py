@@ -1,12 +1,12 @@
 import os
-from abc import ABC, abstractmethod
-
+import re
 import redis
+from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from markdownify import markdownify as md
 
-from apps.shared import const
+from ..shared import const
 
 load_dotenv(override=True)
 
@@ -54,7 +54,6 @@ class BaseCrawler(ABC):
 
         # Remove markdown links while keeping the text
         # Changes [text](url) to just text
-        import re
 
         result = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", result)
 

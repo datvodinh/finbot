@@ -6,8 +6,6 @@ authors = ["Dat Vo <vodinhdat03@gmail.com>"]
 readme = "README.md"
 packages = [
   {include = "src"},
-  {include = "crwaker"},
-  {include = "shared"},
 ]
 
 [tool.poetry.dependencies]
@@ -23,6 +21,10 @@ redis = "^5.2.0"
 hiredis = "^3.0.0"
 python-dotenv = "^1.0.1"
 openai = "^1.58.1"
+bs4 = "^0.0.2"
+
+[tool.deptry.per_rule_ignores]
+DEP002 = ["hiredis"]
 
 
 [tool.poetry.group.dev.dependencies]
