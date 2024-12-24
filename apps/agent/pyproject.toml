@@ -10,7 +10,7 @@ packages = [
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.115.5"
+fastapi = {extras = ["all"], version = "^0.115.6"}
 gradio = "^5.7.1"
 pydantic = "^2.10.2"
 uvicorn = "^0.32.1"
@@ -18,14 +18,13 @@ playwright = "^1.49.0"
 httpx = "^0.28.0"
 markdownify = "^0.14.1"
 redis = "^5.2.0"
-hiredis = "^3.0.0"
 python-dotenv = "^1.0.1"
 openai = "^1.58.1"
 bs4 = "^0.0.2"
+qdrant-client = "^1.12.1"
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["hiredis"]
-
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.8.0"

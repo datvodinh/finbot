@@ -3,7 +3,16 @@ install:
 	@poetry install
 	@echo "🚀 Install Playwright"
 	@playwright install
-	
+
+update:
+	@echo "🚀 Update dependencies using Poetry"
+	@cd apps/agent && poetry update && cd ../..
+
+export: ## Export requirements.txt file
+	@echo "🚀 Exporting requirements.txt file"
+	@cd apps/agent && poetry export --without-hashes -f requirements.txt --output requirements.txt
+	@cd ../..
+
 run: ## Run the application
 	@python apps/agent/src/main.py
 

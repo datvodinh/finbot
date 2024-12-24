@@ -12,8 +12,21 @@ services:
       - app-network
     restart: unless-stopped
 
+  vector-db:
+    image: qdrant/qdrant
+    container_name: vector-db
+    ports:
+      - "16333:6333"
+      - "16334:6334"
+    volumes:
+      - vector-db-data:/qdrant/storage:z
+    networks:
+      - app-network
+    restart: unless-stopped
+
 volumes:
   cache-db-data:
+  vector-db-data:
 
 networks:
   app-network:
