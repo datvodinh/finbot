@@ -1,4 +1,5 @@
 import uuid
+import tiktoken
 from typing import Any, Dict, List, Optional, Union
 from qdrant_client import AsyncQdrantClient, models
 from qdrant_client.http.models import Distance, VectorParams
@@ -11,32 +12,31 @@ class QdrantVectorStore(BaseVectorStore):
     def __init__(
         self,
         location: str = "http://localhost:6333",
+        collection_name: str = "finbot",
         model_type: OpenAIEmbeddingModelType = OpenAIEmbeddingModelType.TEXT_EMBEDDING_3_LARGE,
     ) -> None:
         super().__init__()
         self.location = location
         self.model_type = model_type
         self.model = OpenAIEmbedding(model=self.model_type)
+        self.encoding = tiktoken.encoding_for_model("gpt-4o-mini")
+        self.collection_name = collection_name
 
     async def get_client(self) -> AsyncQdrantClient:
         """Asynchronously retrieves an AsyncQdrantClient connected to the specified location."""
         return AsyncQdrantClient(location=self.location)
 
-    async def create_collection(
-        self,
-        collection_name: str,
-        distance: Distance = Distance.COSINE,
-    ) -> bool:
+    async def create_collection(self) -> bool:
         """Asynchronously creates a new collection in Qdrant if it does not already exist."""
         client = await self.get_client()
-        if await client.collection_exists(collection_name):
+        if await client.collection_exists(self.collection_name):
             return
         return await client.create_collection(
-            collection_name=collection_name,
+            collection_name=self.collection_name,
             vectors_config={
                 "text": VectorParams(
                     size=self.model_type.dim,
-                    distance=distance,
+                    distance=Distance.COSINE,
                 )
             },
         )
@@ -88,6 +88,47 @@ class QdrantVectorStore(BaseVectorStore):
             text = point["text"]
         return str(uuid.uuid5(uuid.NAMESPACE_DNS, text))
 
+    def _chunk(
+        self,
+        points: List[Dict[str, Any]],
+    ) -> List[Dict[str, Any]]:
+        """Chunks the points into smaller pieces if the encoded text is too long."""
+        chunk_points = []
+        for point in points:
+            encode = self.encoding.encode(point["text"])
+            if len(encode) > 2048:
+                point.pop("text")
+                metadata = point.copy()
+
+                for idx in range(0, len(encode), 2048):
+                    new_point = {
+                        "text": encode[idx : idx + 2048],
+                        **metadata,
+                    }
+                    chunk_points.append(new_point)
+            else:
+                chunk_points.append(point)
+
+    async def _delete_points_with_urls(
+        self,
+        urls: List[str],
+    ):
+        """Delete points with the URL(s), if the URL(s) expired in Redis."""
+        client = await self.get_client()
+        await client.delete(
+            collection_name="{collection_name}",
+            points_selector=models.FilterSelector(
+                filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="url",
+                            match=models.MatchAny(any=urls),
+                        ),
+                    ],
+                )
+            ),
+        )
+
     async def batch_insert(
         self,
         collection_name: str,
@@ -109,6 +150,13 @@ class QdrantVectorStore(BaseVectorStore):
             assert all(
                 [key in point for key in embedding_keys for point in points]
             ), f"Redundant keys in the embedding_keys: {embedding_keys}"
+        
+        # Chunk the points if the encoded text is too long
+        points = self._chunk(points)
+        
+        # Remove points with expired URLs
+        urls = list(map(lambda point: point["url"], points))
+        await self._delete_points_with_urls(urls)
 
         client = await self.get_client()
         if not await client.collection_exists(collection_name):
