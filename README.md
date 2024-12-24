@@ -11,5 +11,9 @@ make install
 ## Run
 
 ```bash
+docker compose up -d --build
+```
+
+```bash
 make
 ```
