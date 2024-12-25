@@ -1,10 +1,13 @@
 import os
 import re
-import redis
 from abc import ABC, abstractmethod
+from urllib.parse import urljoin, urlparse
+
+import redis
 from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from markdownify import markdownify as md
+
 from ..shared import const
 
 load_dotenv(override=True)
@@ -23,24 +26,58 @@ class BaseCrawler(ABC):
         self.cache_db.ping()
         self.cache_ttl = const.CACHE_TTL
 
-    def extract_all_urls(self, html: str) -> list:
+    def extract_all_urls(self, original_url: str, html: str) -> list:
         """
-        Extract all urls from html content
+        Extract all URLs from HTML content and sort them based on relevance.
+
+        Args:
+            original_url (str): The original URL from which the HTML content was fetched.
+            html (str): The HTML content to parse for URLs.
+
+        Returns:
+            list: A list of dictionaries with normalized URLs
         """
         urls = []
+        base_url = urlparse(original_url)
+        base_domain = f"{base_url.scheme}://{base_url.netloc}"
 
         soup = BeautifulSoup(html, "html.parser")
         all_urls = soup.find_all("a")
 
         for url in all_urls:
-            urls.append(
-                {
-                    "href": url.get("href"),
-                    "text": url.get_text(),
-                }
-            )
+            href = url.get("href")
+            if not href:
+                continue
 
-        return urls
+            # Normalize the URL
+            try:
+                if not href.startswith(("http://", "https://")):
+                    href = urljoin(base_domain, href)
+
+                urls.append({"href": href, "text": url.get_text().strip()})
+            except Exception:
+                continue
+
+        # Sort URLs by domain match and length
+        sorted_length_urls = sorted(
+            urls,
+            key=lambda x: (x["href"].startswith("http"), len(x["href"])),
+            reverse=True,
+        )
+
+        meaningful_urls = []
+
+        # First add same-domain URLs
+        for url in sorted_length_urls:
+            if base_domain in url["href"]:
+                meaningful_urls.append(url)
+
+        # Then add remaining URLs
+        for url in sorted_length_urls:
+            if url not in meaningful_urls:
+                meaningful_urls.append(url)
+
+        return meaningful_urls  # Return meaningful_urls instead of urls
 
     def markdownify(self, html: str) -> str:
         """
@@ -57,12 +94,8 @@ class BaseCrawler(ABC):
         result = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", result)
 
         # Remove multiple newlines/spaces
-        result = re.sub(
-            r"\n{3,}", "\n\n", result
-        )  # Replace 3+ newlines with 2
-        result = re.sub(
-            r" {2,}", " ", result
-        )  # Replace multiple spaces with single
+        result = re.sub(r"\n{3,}", "\n\n", result)  # Replace 3+ newlines with 2
+        result = re.sub(r" {2,}", " ", result)  # Replace multiple spaces with single
 
         # Remove empty lines at start/end
         result = result.strip()

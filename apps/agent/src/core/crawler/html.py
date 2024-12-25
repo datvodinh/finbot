@@ -1,6 +1,5 @@
 import asyncio
 import json
-from typing import Dict, List
 
 import httpx
 from playwright.async_api import TimeoutError, async_playwright
@@ -21,10 +20,10 @@ class HtmlCrawler(BaseCrawler):
         self.cache_ttl = self.config.get("cache_ttl", 600)
         self.end_with_capture = self.config.get("end_with_capture", False)
         self.fetch_strategy = self.config.get("fetch_strategy", "hybrid")
-        self.max_recursive_urls = self.config.get("max_recursive_urls", 6)
+        self.max_recursive_urls = self.config.get("max_recursive_urls", 3)
 
     async def _fetch_by_requests(self, url: str) -> str:
-        print(f"==>> url: {url}")
+        # print(f"==>> url: {url}")
         try:
             async with httpx.AsyncClient(
                 timeout=5,
@@ -34,7 +33,7 @@ class HtmlCrawler(BaseCrawler):
                 response.raise_for_status()
                 return {
                     "markdown": self.markdownify(response.text),
-                    "urls": self.extract_all_urls(response.text),
+                    "urls": self.extract_all_urls(url, response.text),
                 }
         except Exception as _:
             return {
@@ -43,7 +42,7 @@ class HtmlCrawler(BaseCrawler):
             }
 
     async def _fetch_by_browser(self, url: str) -> str:
-        print(f"==>> url: {url}")
+        # print(f"==>> url: {url}")
         async with async_playwright() as p:
             browser = await p.chromium.launch(
                 headless=self.headless,
@@ -59,10 +58,16 @@ class HtmlCrawler(BaseCrawler):
                 content = await page.content()
                 return {
                     "markdown": self.markdownify(content),
-                    "urls": self.extract_all_urls(content),
+                    "urls": self.extract_all_urls(url, content),
                 }
             except TimeoutError:
-                print("Timeout reached, collecting available data")
+                console.print("Timeout reached, collecting available data")
+                return {
+                    "markdown": "",
+                    "urls": [],
+                }
+            except Exception as e:
+                console.print(f"[bold red]Error: {str(e)}[/bold red]")
                 return {
                     "markdown": "",
                     "urls": [],
@@ -72,18 +77,20 @@ class HtmlCrawler(BaseCrawler):
                     await page.screenshot(path="screenshot.png")
                 await browser.close()
 
-    async def fetch(self, url: str) -> List[Dict[str, str]]:
+    async def fetch(self, url: str) -> dict:
+        # print(f"==>> url: {url}")
         if self.fetch_strategy == "requests":
             data = await self._fetch_by_requests(url)
         elif self.fetch_strategy == "browser":
             data = await self._fetch_by_browser(url)
         elif self.fetch_strategy == "hybrid":
-            try:
-                data = await self._fetch_by_requests(url)
-                console.print("[bold cyan]Fetched by requests[/bold cyan]")
-            except httpx.HTTPStatusError:
-                data = await self._fetch_by_browser(url)
+            data = await self._fetch_by_requests(url)
+
+            if data["markdown"] == "":
                 console.print("[bold magenta]Fetched by browser[/bold magenta]")
+                data = await self._fetch_by_browser(url)
+            else:
+                console.print("[bold cyan]Fetched by requests[/bold cyan]")
         else:
             raise ValueError(f"Invalid fetch strategy: {self.fetch_strategy}")
 
@@ -102,9 +109,13 @@ class HtmlCrawler(BaseCrawler):
 
         urls = data.get("urls", [])
 
-        tasks = [self.fetch(url) for url in urls[: self.max_recursive_urls]]
+        console.print(f"Found {len(urls)} urls before recursive fetching")
+
+        tasks = [self.fetch(url["href"]) for url in urls[: self.max_recursive_urls]]
 
         first_depth_data = await asyncio.gather(*tasks)
+
+        # console.print("First depth data fetched:", first_depth_data)
 
         total_markdown = (
             data["markdown"]
@@ -113,6 +124,8 @@ class HtmlCrawler(BaseCrawler):
         )
 
         data["markdown"] = total_markdown
+
+        # console.print(data)
 
         # Cache the data
         self.cache_db.set(
