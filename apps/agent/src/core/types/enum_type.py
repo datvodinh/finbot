@@ -13,6 +13,7 @@ class OpenAIEmbeddingModelType(Enum):
     TEXT_EMBEDDING_ADA_2 = "text-embedding-ada-002"
     TEXT_EMBEDDING_3_SMALL = "text-embedding-3-small"
     TEXT_EMBEDDING_3_LARGE = "text-embedding-3-large"
+    JINA_EMBEDDING = "jinaai/jina-embeddings-v3"
 
     @property
     def dim(self) -> int:
@@ -22,6 +23,8 @@ class OpenAIEmbeddingModelType(Enum):
             return 1536
         elif self is OpenAIEmbeddingModelType.TEXT_EMBEDDING_3_LARGE:
             return 3072
+        elif self is OpenAIEmbeddingModelType.JINA_EMBEDDING:
+            return 1024
 
 
 class TaskType:

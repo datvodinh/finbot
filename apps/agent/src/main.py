@@ -48,14 +48,14 @@ gr.mount_gradio_app(
     path="/v1/demo",
     root_path="/v1/demo",
     server_name="0.0.0.0",
-    server_port=8000,
+    server_port=7860,
 )
 
 if __name__ == "__main__":
     uvicorn.run(
         "main:app",
         host="0.0.0.0",
-        port=8000,
+        port=7860,
         # reload=True,
         # reload_dirs=["src"],
         # reload_delay=0.5,

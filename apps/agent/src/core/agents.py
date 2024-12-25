@@ -10,7 +10,11 @@ from src.core.tools import (
     SummarizeTool,
     TaskCheckTool,
 )
-from src.core.types import OpenAIModelType, TaskType
+from src.core.types import (
+    OpenAIModelType,
+    TaskType,
+    OpenAIEmbeddingModelType,
+)
 from src.core.vectordb import QdrantVectorStore
 
 
@@ -39,6 +43,7 @@ class FinBotAgent:
 
         self._vector_store = QdrantVectorStore(
             location=os.getenv("QDRANT_URL", "http://localhost:6333"),
+            model_type=OpenAIEmbeddingModelType.JINA_EMBEDDING,
         )
 
         self._summarize_tool = SummarizeTool()

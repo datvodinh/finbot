@@ -93,7 +93,7 @@ class FinbotGUI:
                 ]
                 chatbot.extend(message)
                 yield chatbot
-                
+
             elif response["action"] == "summarize_history" and mode == "dev":
                 message = [
                     {
@@ -120,7 +120,10 @@ class FinbotGUI:
                 chatbot.extend(message)
                 yield chatbot
 
-            elif response["action"] in ["crawl_urls", "search"] and mode == "dev":
+            elif (
+                response["action"] in ["crawl_urls", "search"]
+                and mode == "dev"
+            ):
                 message = [
                     {
                         "role": "assistant",
@@ -164,6 +167,8 @@ class FinbotGUI:
                 os.getcwd(),
                 "apps/agent/src/gui/style/style.css",
             ),
+            fill_height=True,
+            fill_width=True,
         ) as demo:
             gr.Markdown(
                 "## Finbot",
@@ -177,6 +182,7 @@ class FinbotGUI:
                         height="69vh",
                         label="Finbot",
                         bubble_full_width=False,
+                        show_copy_button=True,
                     )
                     history = gr.State([])
                     answer = gr.State("")

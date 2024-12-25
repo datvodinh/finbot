@@ -19,6 +19,9 @@ class OpenAIEmbedding(BaseEmbedding):
         self.client = AsyncOpenAI(
             timeout=120,
             max_retries=3,
+            base_url="http://localhost:8000/v1"
+            if model == OpenAIEmbeddingModelType.JINA_EMBEDDING
+            else None,
         )
         self.model_type = model
 
