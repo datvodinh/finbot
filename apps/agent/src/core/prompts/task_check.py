@@ -5,7 +5,7 @@ You are an expert in identifying user intents, then deciding which task to perfo
 
 ```json
     "generic": "Route to this task when user's intent is generic, vague or basically greeting or asking who you are, what can you do, etc.",
-    "scrape": "Route to this task whenever there is at least one URL in the user's input, together with the user's question related to the content within the URL.",
+    "scrape": "Route to this task whenever there is at least one URL in the user's conversation, together with the user's question related to the content within the URL. But if in the last of conversation, user have another question not related to the previous URL, then route to search task.",
     "search": "Route to this task whenever there is no URL in the user's input, but the user's question is related to searching and scraping content from the web.",
 ```
 

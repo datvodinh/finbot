@@ -1,9 +1,10 @@
-import os
 import asyncio
+import os
 import time
 from typing import Any, Dict, List, Optional
+
 from src.core.tasks import GenericTaskExecutor, RAGTaskExecutor
-from src.core.tools import FetchUrlsTool, TaskCheckTool, SearchTool
+from src.core.tools import FetchUrlsTool, SearchTool, SummarizeTool, TaskCheckTool
 from src.core.types import OpenAIModelType, TaskType
 from src.core.vectordb import QdrantVectorStore
 
@@ -34,6 +35,8 @@ class FinBotAgent:
         self._vector_store = QdrantVectorStore(
             location=os.getenv("QDRANT_URL", "http://localhost:6333"),
         )
+
+        self._summarize_tool = SummarizeTool()
 
         asyncio.run(self._vector_store.create_collection())
 
@@ -75,12 +78,25 @@ class FinBotAgent:
         else:
             yield {
                 "action": "search",
-                "content": f"🔍 Searching for information about '{user_message}'...",
+                "content": f"🔍 Receving from user: '{user_message}'...",
             }
 
             if result["task"] == TaskType.SEARCH:
+                # TODO: Use llm summarizes history to generate suitable query for searching
+                query = await self._summarize_tool.run(
+                    input_query=user_message,
+                    history=history,
+                )
+
+                yield {
+                    "action": "summarize_history",
+                    "content": query,
+                }
+
+                print(f"Summarized query: {query}")
+
                 urls = await self._search_tool.run(
-                    query=user_message,
+                    query=query,
                     num_results=6,
                 )
                 yield {

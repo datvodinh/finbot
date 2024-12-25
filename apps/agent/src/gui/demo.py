@@ -1,6 +1,6 @@
 import os
 import time
-from typing import Dict, List, Optional, Literal
+from typing import Dict, List, Literal, Optional
 
 import gradio as gr
 
@@ -93,6 +93,16 @@ class FinbotGUI:
                 ]
                 chatbot.extend(message)
                 yield chatbot
+            elif response["action"] == "summarize_history" and mode == "dev":
+                message = [
+                    {
+                        "role": "assistant",
+                        "content": response["content"],
+                        "metadata": {
+                            "title": f"📝 Google Search: {response['content']}",
+                        },
+                    }
+                ]
 
             elif response["action"] == "fetch_urls" and mode == "dev":
                 message = [
@@ -107,10 +117,7 @@ class FinbotGUI:
                 chatbot.extend(message)
                 yield chatbot
 
-            elif (
-                response["action"] in ["crawl_urls", "search"]
-                and mode == "dev"
-            ):
+            elif response["action"] in ["crawl_urls", "search"] and mode == "dev":
                 message = [
                     {
                         "role": "assistant",
