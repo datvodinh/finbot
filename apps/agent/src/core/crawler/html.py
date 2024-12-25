@@ -78,6 +78,15 @@ class HtmlCrawler(BaseCrawler):
                 await browser.close()
 
     async def fetch(self, url: str) -> dict:
+        # Check cache first
+        cached_data = self.cache_db.get(url)
+
+        if cached_data is not None:
+            print("CACHE HIT: {}".format(url[:100] + "..."))
+            return json.loads(cached_data.decode("utf-8")) | {
+                "status": "cached"
+            }
+
         # print(f"==>> url: {url}")
         if self.fetch_strategy == "requests":
             data = await self._fetch_by_requests(url)
@@ -87,45 +96,14 @@ class HtmlCrawler(BaseCrawler):
             data = await self._fetch_by_requests(url)
 
             if data["markdown"] == "":
-                console.print("[bold magenta]Fetched by browser[/bold magenta]")
+                console.print(
+                    "[bold magenta]Fetched by browser[/bold magenta]"
+                )
                 data = await self._fetch_by_browser(url)
             else:
                 console.print("[bold cyan]Fetched by requests[/bold cyan]")
         else:
             raise ValueError(f"Invalid fetch strategy: {self.fetch_strategy}")
-
-        return data
-
-    async def run(self, url: str) -> str:
-        # Check cache first
-        cached_data = self.cache_db.get(url)
-
-        if cached_data is not None:
-            print("CACHE HIT: {}".format(url))
-            return json.loads(cached_data.decode("utf-8"))
-
-        # Firsts fetch
-        data = await self.fetch(url)
-
-        urls = data.get("urls", [])
-
-        console.print(f"Found {len(urls)} urls before recursive fetching")
-
-        tasks = [self.fetch(url["href"]) for url in urls[: self.max_recursive_urls]]
-
-        first_depth_data = await asyncio.gather(*tasks)
-
-        # console.print("First depth data fetched:", first_depth_data)
-
-        total_markdown = (
-            data["markdown"]
-            + "\n\n"
-            + "\n\n".join([d["markdown"] for d in first_depth_data])
-        )
-
-        data["markdown"] = total_markdown
-
-        # console.print(data)
 
         # Cache the data
         self.cache_db.set(
@@ -133,5 +111,38 @@ class HtmlCrawler(BaseCrawler):
             json.dumps(data, indent=2, ensure_ascii=False),
             ex=self.cache_ttl,
         )
+
+        return data | {"status": "new"}
+
+    async def run(
+        self,
+        url: str,
+        recursive: bool = True,
+    ) -> str:
+        # Firsts fetch
+        data = await self.fetch(url)
+        if recursive:
+            urls = data.get("urls", [])
+
+            console.print(f"Found {len(urls)} urls before recursive fetching")
+
+            tasks = [
+                self.fetch(url["href"])
+                for url in urls[: self.max_recursive_urls]
+            ]
+
+            first_depth_data = await asyncio.gather(*tasks)
+
+            # console.print("First depth data fetched:", first_depth_data)
+
+            total_markdown = (
+                data["markdown"]
+                + "\n\n"
+                + "\n\n".join([d["markdown"] for d in first_depth_data])
+            )
+
+            data["markdown"] = total_markdown
+
+        # console.print(data)
 
         return data

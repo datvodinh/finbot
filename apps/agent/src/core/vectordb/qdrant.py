@@ -6,6 +6,9 @@ from qdrant_client.http.models import Distance, VectorParams
 from src.core.embeddings import OpenAIEmbedding
 from src.core.types import OpenAIEmbeddingModelType
 from src.core.vectordb.base import BaseVectorStore
+from rich.console import Console
+
+console = Console()
 
 
 class QdrantVectorStore(BaseVectorStore):
@@ -150,6 +153,19 @@ class QdrantVectorStore(BaseVectorStore):
             assert all(
                 [key in point for key in embedding_keys for point in points]
             ), f"Redundant keys in the embedding_keys: {embedding_keys}"
+
+        points = [
+            point
+            for point in points
+            if point["text"] and point["status"] != "cached"
+        ]
+
+        console.print(
+            f"[bold green]Inserting {len(points)} points into the collection[/bold green]"
+        )
+
+        if len(points) == 0:
+            return
 
         # Remove points with expired URLs
         urls = list(map(lambda point: point["url"], points))

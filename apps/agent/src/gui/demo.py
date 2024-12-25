@@ -93,6 +93,7 @@ class FinbotGUI:
                 ]
                 chatbot.extend(message)
                 yield chatbot
+                
             elif response["action"] == "summarize_history" and mode == "dev":
                 message = [
                     {
@@ -103,6 +104,8 @@ class FinbotGUI:
                         },
                     }
                 ]
+                chatbot.extend(message)
+                yield chatbot
 
             elif response["action"] == "fetch_urls" and mode == "dev":
                 message = [
@@ -179,7 +182,7 @@ class FinbotGUI:
                     answer = gr.State("")
                     with gr.Row():
                         mode = gr.Dropdown(
-                            value="prod",
+                            value="dev",
                             choices=["prod", "dev"],
                             show_label=False,
                         )

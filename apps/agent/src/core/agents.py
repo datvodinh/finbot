@@ -4,7 +4,12 @@ import time
 from typing import Any, Dict, List, Optional
 
 from src.core.tasks import GenericTaskExecutor, RAGTaskExecutor
-from src.core.tools import FetchUrlsTool, SearchTool, SummarizeTool, TaskCheckTool
+from src.core.tools import (
+    FetchUrlsTool,
+    SearchTool,
+    SummarizeTool,
+    TaskCheckTool,
+)
 from src.core.types import OpenAIModelType, TaskType
 from src.core.vectordb import QdrantVectorStore
 
@@ -113,6 +118,7 @@ class FinBotAgent:
             start_time = time.perf_counter()
             data: List[Dict[str, str]] = await self._fetch_urls_tool.run(
                 urls=urls,
+                recursive=result["task"] == TaskType.SCRAPE,
             )
             time_elapsed = time.perf_counter() - start_time
 
