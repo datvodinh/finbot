@@ -14,7 +14,7 @@ load_dotenv(override=True)
 class SummarizeTool(BaseTool):
     def __init__(
         self,
-        model: OpenAIModelType = OpenAIModelType.QWEN_25_32B,
+        model: OpenAIModelType = OpenAIModelType.GPT_4O,
     ):
         super().__init__()
         self.model = OpenAIModel(
@@ -26,10 +26,10 @@ class SummarizeTool(BaseTool):
 
     async def run(self, input_query: str, history: list | None = None) -> dict:
         response = await self.model.query(
-            input_query,
-            history,
-            system_message=SUMMARIZE,
-            max_completion_tokens=16000,
+            user_message=input_query,
+            system_message=SUMMARIZE % {"context": self.prepare_history(history)},
+            max_completion_tokens=100,
+            temperature=0,
         )
 
-        return self.text_to_json(response.choices[0].message.content)
+        return response.choices[0].message.content.strip()

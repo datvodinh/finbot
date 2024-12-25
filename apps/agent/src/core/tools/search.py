@@ -1,9 +1,10 @@
 import os
 from typing import List
+
+from dotenv import load_dotenv
 from googleapiclient.discovery import build
 
 from .base import BaseTool
-from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -38,9 +39,9 @@ class SearchTool(BaseTool):
             )
             if "items" in response:
                 for item in response["items"]:
-                    results.append(
-                        item["link"]
-                    )  # Collect the URLs from search results
+                    # Collect the URLs from search results
+                    if ".pdf" not in item["link"]:
+                        results.append(item["link"])
         except Exception as e:
             print(f"An error occurred: {e}")
 
