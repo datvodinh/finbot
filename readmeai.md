@@ -1,27 +1,6 @@
-<div align="left">
-    <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" width="40%" align="left" style="margin-right: 15px"/>
-    <div style="display: inline-block;">
-        <h2 style="display: inline-block; vertical-align: middle; margin-top: 0;"><code>❯ REPLACE-ME</code></h2>
-        <p>
-	<em>Architecting AI: Building Tomorrow's Conversations Today!</em>
-</p>
-        <p>
-	<!-- local repository, no metadata badges. --></p>
-        <p>Built with the tools and technologies:</p>
-        <p>
-	<img src="https://img.shields.io/badge/Redis-DC382D.svg?style=flat-square&logo=Redis&logoColor=white" alt="Redis">
-	<img src="https://img.shields.io/badge/.ENV-ECD53F.svg?style=flat-square&logo=dotenv&logoColor=black" alt=".ENV">
-	<img src="https://img.shields.io/badge/Playwright-2EAD33.svg?style=flat-square&logo=Playwright&logoColor=white" alt="Playwright">
-	<img src="https://img.shields.io/badge/Docker-2496ED.svg?style=flat-square&logo=Docker&logoColor=white" alt="Docker">
-	<img src="https://img.shields.io/badge/Python-3776AB.svg?style=flat-square&logo=Python&logoColor=white" alt="Python">
-	<img src="https://img.shields.io/badge/Poetry-60A5FA.svg?style=flat-square&logo=Poetry&logoColor=white" alt="Poetry">
-	<img src="https://img.shields.io/badge/OpenAI-412991.svg?style=flat-square&logo=OpenAI&logoColor=white" alt="OpenAI">
-</p>
-    </div>
-</div>
-<br clear="left"/>
+# Finance RAG Chatbot Project
 
-<details><summary>Table of Contents</summary>
+## Table of Contents
 
 - [📍 Overview](#-overview)
 - [👾 Features](#-features)
@@ -36,9 +15,6 @@
 - [🔰 Contributing](#-contributing)
 - [🎗 License](#-license)
 - [🙌 Acknowledgments](#-acknowledgments)
-
-</details>
-<hr>
 
 ## 📍 Overview
 
