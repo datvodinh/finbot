@@ -9,8 +9,9 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY ./requirements.txt .
-RUN pip3 install uv
+RUN pip install uv
 RUN uv pip install --system -r requirements.txt --no-cache-dir
+RUN pip install -e .
 
 # Copy the application code
 COPY . .
