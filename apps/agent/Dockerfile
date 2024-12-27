@@ -14,6 +14,7 @@ COPY ./requirements.txt .
 RUN pip install uv
 RUN uv pip install --system -r requirements.txt --no-cache-dir
 RUN playwright install
+RUN playwright install-deps 
 
 
 # Copy the application code
