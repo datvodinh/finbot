@@ -1,5 +1,7 @@
 FROM python:3.11-slim-bookworm AS base
 
+WORKDIR /app
+
 RUN apt-get update && \
     apt-get install -y gcc build-essential curl git && \
     apt-get clean && \
@@ -16,5 +18,7 @@ RUN uv pip install --system -r requirements.txt --no-cache-dir
 # Copy the application code
 COPY . .
 RUN pip install -e .
+
+EXPOSE 7860
 
 CMD ["python", "src/main.py"]

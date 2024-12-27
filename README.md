@@ -39,9 +39,8 @@ services:
     container_name: finbot-agent
     environment:
       - REDIS_HOST=cache-db
-      - REDIS_PORT=6479
-      - QDRANT_HOST=vector-db
-      - QDRANT_PORT=16333
+      - REDIS_PORT=6379
+      - QDRANT_URL=http://vector-db:6333
       - OPENAI_API_KEY=
       - GOOGLE_API_KEY=
       - GOOGLE_CSE_ID=
@@ -82,9 +81,8 @@ poetry install
 
 ```sh
 REDIS_HOST=0.0.0.0
-REDIS_PORT=6479
-QDRANT_HOST=0.0.0.0
-QDRANT_PORT=16333
+REDIS_PORT=6379
+QDRANT_URL=http://0.0.0.0:6333
 OPENAI_API_KEY=
 GOOGLE_API_KEY=
 GOOGLE_CSE_ID=

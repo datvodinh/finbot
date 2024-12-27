@@ -2,15 +2,16 @@ services:
   agent:
     image: ghcr.io/datvodinh/finbot:main
     container_name: finbot-agent
+    pull_policy: always
     environment:
       - REDIS_HOST=cache-db
-      - REDIS_PORT=6479
-      - QDRANT_HOST=vector-db
-      - QDRANT_PORT=16333
+      - REDIS_PORT=6379
+      - QDRANT_URL=http://vector-db:6333
       - OPENAI_API_KEY=
       - GOOGLE_API_KEY=
       - GOOGLE_CSE_ID=
-
+    ports:
+      - "7860:7860"
     depends_on:
       - cache-db
       - vector-db

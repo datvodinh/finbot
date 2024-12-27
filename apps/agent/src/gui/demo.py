@@ -163,10 +163,6 @@ class FinbotGUI:
     def build(self):
         with gr.Blocks(
             theme=gr.themes.Ocean(text_size="lg"),
-            css_paths=os.path.join(
-                os.getcwd(),
-                "apps/agent/src/gui/style/style.css",
-            ),
             fill_height=True,
             fill_width=True,
         ) as demo:
