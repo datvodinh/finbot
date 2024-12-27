@@ -1,0 +1,52 @@
+name: "Build"
+
+on:
+  push:
+    branches:
+      - "main"
+  workflow_dispatch:
+
+concurrency:
+  group: "${{ github.workflow }} @ ${{ github.event.pull_request.head.label || github.head_ref || github.ref }} - CI"
+  cancel-in-progress: true
+
+jobs:
+  tag:
+    name: Update Tag
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Create a new tag
+        id: tag
+        uses: anothrNick/github-tag-action@1.71.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          WITH_V: "true"
+          DEFAULT_BUMP: patch
+
+  docker-build-agent:
+    needs: tag
+    name: Build FinBot Image
+    environment: dev
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+      contents: write
+    if: github.event.pull_request.draft == false
+    steps:
+      - name: Checkout Actions Repository
+        uses: actions/checkout@v4
+
+      - name: Build FinBot Image
+        uses: ./.github/actions/package-container
+        with:
+          FOLDER_PATH: ./apps/agent
+          IMAGE_NAME: medbot-agent
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.actor }}
+          ORGANIZATION_NAME: datvodinh

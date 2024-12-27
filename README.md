@@ -1,5 +1,9 @@
 # Finance RAG Chatbot Project
 
+![alt text](images/chat.png)
+
+## Flow
+
 ![alt text](images/flow.svg)
 
 ## Install
@@ -16,4 +20,4 @@ docker compose up -d --build
 
 ```bash
 make
-```
+```s

@@ -162,7 +162,7 @@ class FinbotGUI:
 
     def build(self):
         with gr.Blocks(
-            theme=gr.themes.Ocean(),
+            theme=gr.themes.Ocean(text_size="lg"),
             css_paths=os.path.join(
                 os.getcwd(),
                 "apps/agent/src/gui/style/style.css",
@@ -188,14 +188,14 @@ class FinbotGUI:
                     answer = gr.State("")
                     with gr.Row():
                         mode = gr.Dropdown(
-                            value="dev",
+                            value="prod",
                             choices=["prod", "dev"],
                             show_label=False,
                         )
                         message = gr.MultimodalTextbox(
                             show_label=False,
                             file_types=["text"],
-                            placeholder="Nhập tin nhắn của bạn ở đây",
+                            placeholder="Enter your message here ...",
                             scale=10,
                         )
 
