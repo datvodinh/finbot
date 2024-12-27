@@ -11,9 +11,10 @@ WORKDIR /app
 COPY ./requirements.txt .
 RUN pip install uv
 RUN uv pip install --system -r requirements.txt --no-cache-dir
-RUN pip install -e .
+
 
 # Copy the application code
 COPY . .
+RUN pip install -e .
 
 CMD ["python", "src/main.py"]

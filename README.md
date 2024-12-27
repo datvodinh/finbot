@@ -51,7 +51,7 @@ services:
 **Using `docker`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Docker-2CA5E0.svg?style={badge_style}&logo=docker&logoColor=white" />](https://www.docker.com/)
 
 ```sh
-docker compose up -f --build
+docker compose up -d --build
 ```
 
 ### ⚙️ Advanced Installation
