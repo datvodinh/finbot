@@ -1,6 +1,24 @@
-version: "3.9"
-
 services:
+  agent:
+    image: ghcr.io/datvodinh/finbot:main
+    container_name: finbot-agent
+    environment:
+      - REDIS_HOST=cache-db
+      - REDIS_PORT=6479
+      - QDRANT_HOST=vector-db
+      - QDRANT_PORT=16333
+      - OPENAI_API_KEY=
+      - GOOGLE_API_KEY=
+      - GOOGLE_CSE_ID=
+
+    depends_on:
+      - cache-db
+      - vector-db
+    networks:
+      - app-network
+    restart: unless-stopped
+
+
   cache-db:
     image: redis:alpine
     container_name: cache-db
