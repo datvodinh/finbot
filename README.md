@@ -1,4 +1,4 @@
-# Finance RAG Chatbot Project
+# Realtime RAG Chatbot Project for Finance.
 
 ![alt text](images/chat.png)
 
@@ -51,7 +51,7 @@ services:
 **Using `docker`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Docker-2CA5E0.svg?style={badge_style}&logo=docker&logoColor=white" />](https://www.docker.com/)
 
 ```sh
-❯ docker compose up -f --build
+docker compose up -f --build
 ```
 
 ### ⚙️ Advanced Installation
@@ -62,12 +62,12 @@ Install  using one of the following methods:
 
 1. Clone the  repository:
 ```sh
-❯ git clone https://github.com/datvodinh/finbot.git
+git clone https://github.com/datvodinh/finbot.git
 ```
 
 2. Navigate to the project directory:
 ```sh
-❯ cd 
+cd 
 ```
 
 3. Install the project dependencies:
@@ -75,7 +75,7 @@ Install  using one of the following methods:
 **Using `poetry`** &nbsp; [<img align="center" src="https://img.shields.io/endpoint?url=https://python-poetry.org/badge/v0.json" />](https://python-poetry.org/)
 
 ```sh
-❯ poetry install
+poetry install
 ```
 
 **Add environment variables to [.env](./apps/agent/)**
@@ -93,7 +93,7 @@ GOOGLE_CSE_ID=
 **Run using `pip`** &nbsp; [<img align="center" src="https://img.shields.io/badge/Pip-3776AB.svg?style={badge_style}&logo=pypi&logoColor=white" />](https://pypi.org/project/pip/)
 
 ```sh
-❯ python src/main.py
+python src/main.py
 ```
 
 ---
