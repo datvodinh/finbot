@@ -20,4 +20,4 @@ docker compose up -d --build
 
 ```bash
 make
-```s
+```
