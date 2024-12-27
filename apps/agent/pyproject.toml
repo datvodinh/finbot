@@ -24,6 +24,7 @@ bs4 = "^0.0.2"
 qdrant-client = "^1.12.1"
 tiktoken = "^0.8.0"
 google-api-python-client = "^2.156.0"
+rich = "^13.9.4"
 
 [tool.deptry.per_rule_ignores]
 DEP002 = ["hiredis"]
