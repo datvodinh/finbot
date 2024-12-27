@@ -46,7 +46,7 @@ jobs:
         uses: ./.github/actions/package-container
         with:
           FOLDER_PATH: ./apps/agent
-          IMAGE_NAME: medbot-agent
+          IMAGE_NAME: finbot
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
           USERNAME: ${{ github.actor }}
           ORGANIZATION_NAME: datvodinh
