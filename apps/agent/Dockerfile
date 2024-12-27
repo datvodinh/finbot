@@ -3,7 +3,7 @@ FROM python:3.11-slim-bookworm AS base
 WORKDIR /app
 
 RUN apt-get update && \
-    apt-get install -y gcc build-essential libevent-2.1-7t64 libavif16 && \
+    apt-get install -y gcc build-essential libevent-dev libavif-dev && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
