@@ -19,11 +19,11 @@ jobs:
       packages: write
     steps:
       - name: Check out
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Create a new tag
         id: tag
-        uses: anothrNick/github-tag-action@1.71.0
+        uses: anothrNick/github-tag-action@1.73.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: "true"
@@ -40,7 +40,7 @@ jobs:
     if: github.event.pull_request.draft == false
     steps:
       - name: Checkout Actions Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Build FinBot Image
         uses: ./.github/actions/package-container
